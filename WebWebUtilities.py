@@ -27,10 +27,10 @@ def visualizePassingNetworks(visTitle, visInfoList):
     web.display.colorBy = 'strength'
     web.display.scaleLinkWidth = True
     web.display.sizeBy = 'strength'
-    web.display.showNodeNames = False
+    web.display.showNodeNames = True
     web.display.showLegend = True
     #web.display.hideMenu = True
-    #web.display.attachWebwebToElementWithId = 'test-vis'
+    web.display.attachWebwebToElementWithId = 'soccer-vis'
     web.show()
 
 def createMetaDataNames(libPlayers):
