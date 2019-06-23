@@ -14,10 +14,11 @@ def visualizePassingNetworks(visTitle, visInfoList):
     for item in visInfoList:
 
         passing = PassingUtilities.createPassingList(item[0])
-        A, libPlayers = PassingUtilities.createAdjacencyAndDict(passing)
-        displayInfo = createMetaDataNames(libPlayers)
+        if len(passing) != 0:
+            A, libPlayers = PassingUtilities.createAdjacencyAndDict(passing)
+            displayInfo = createMetaDataNames(libPlayers)
 
-        web.networks.__dict__[item[1]] = webweb.webweb.Network(adjacency=A, metadata=displayInfo)
+            web.networks.__dict__[item[1]] = webweb.webweb.Network(adjacency=A, metadata=displayInfo)
 
     # web = Web(title='World Cup Soccer Data', adjacency=A, display=displayInfo)
     web.display.charge = 500

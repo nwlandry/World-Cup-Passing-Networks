@@ -167,8 +167,9 @@ class AnalysisApp(tk.Tk):
             data = json.load(json_file)
         for item in data:
             listItem = item["competition_name"] + " " + item["season_name"]
-            self.availableItemsList.insert(tk.END, listItem)
-            self.data.update({listItem:item["competition_id"]})
+            if listItem not in self.availableItemsList.get(0, tk.END):
+                self.availableItemsList.insert(tk.END, listItem)
+                self.data.update({listItem:item["competition_id"]})
 
     def LoadMatches(self):
         dirList = os.listdir(self.defaultFolder + "/matches/")
@@ -178,8 +179,9 @@ class AnalysisApp(tk.Tk):
                 data = json.load(json_file)
             for item in data:
                 listItem = item["home_team"]["home_team_name"] + " vs. " + item["away_team"]["away_team_name"] + " " + item["match_date"]
-                self.availableItemsList.insert(tk.END, listItem)
-                self.data.update({listItem:item["match_id"]})
+                if listItem not in self.availableItemsList.get(0, tk.END):
+                    self.availableItemsList.insert(tk.END, listItem)
+                    self.data.update({listItem:item["match_id"]})
 
     def GetCompetitionMatchFileList(self, competitionMatchesFile):
         matchFileList = list()

@@ -3,10 +3,20 @@ import numpy
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
+import traceback
 
 def createPassingList(filename):
     with open(filename) as json_file:
-        data = json.load(json_file)
+        try:
+            data = json.load(json_file)
+        except:
+            with open(filename, 'r', encoding='utf-8') as json_file:
+                try:
+                    data = json.load(json_file)
+                except Exception as e:
+                    print(e)
+                    print(filename)
+                    return list()
 
     passing = list()
     currentPlayer = ""
@@ -41,5 +51,3 @@ def createAdjacencyAndDict(passing):
     for entry in passing:
         A[libPlayers[entry["from"]], libPlayers[entry["to"]]] = entry["passes"]
     return A, libPlayers
-
-    
