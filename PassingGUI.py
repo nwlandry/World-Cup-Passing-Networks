@@ -152,7 +152,7 @@ class AnalysisApp(tk.Tk):
 
     def ClearItems(self):
         self.infoList = []
-        self.visualizeItemsList.delete(1.0, tk.END)
+        self.visualizeItemsList.delete(0, tk.END)
 
 
     def ClearAll(self, event):

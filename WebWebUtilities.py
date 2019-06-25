@@ -42,7 +42,7 @@ def visualizePassingNetworks(visTitle, visInfoList):
     web.display.freezeNodeMovement = True
     web.display.width = width
     web.display.height = height
-    #web.display.attachWebwebToElementWithId = 'soccer-vis'
+    web.display.attachWebwebToElementWithId = 'soccer-vis'
     web.show()
 
 def createMetaData(libPlayers, width, height, pad, fieldLength, fieldWidth):
