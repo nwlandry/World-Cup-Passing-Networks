@@ -14,29 +14,29 @@ filenames = ["19714.json","22921.json","22924.json","22943.json"]
 web = Web(title="World Cup Soccer Data")
 
 for name in filenames:
-    passing = PassingUtilities.createPassingList(name)
-    A, libPlayers = PassingUtilities.createAdjacencyAndDict(passing)
-    displayInfo = WebWebUtilities.createMetaDataNames(libPlayers)
+    passing, libPlayers = PassingUtilities.createPassingListAndLib(name)
+    A = PassingUtilities.createAdjacencyMatrix(passing,libPlayers)
+    displayInfo = WebWebUtilities.createMetaData(libPlayers, 1000, 600, 50, 120, 75)
 
     web.networks.__dict__[name] = webweb.webweb.Network(adjacency=A, metadata=displayInfo)
 
-# web = Web(title='World Cup Soccer Data', adjacency=A, display=displayInfo)
 web.display.charge = 500
 web.display.linkLength = 200
 web.display.linkStrength = 0.5
 web.display.gravity = .1
-web.display.colorBy = 'strength'
+web.display.colorBy = 'team'
 web.display.scaleLinkWidth = True
 web.display.sizeBy = 'strength'
 web.display.showNodeNames = False
 web.display.showLegend = True
+web.display.freezeNodeMovement = True
+web.display.colorPalette = 'Dark2'
+web.display.width = 1000
+web.display.height = 600
 #web.display.hideMenu = True
 #web.display.attachWebwebToElementWithId = 'test-vis'
 web.show()
-
-
-
-
+#
 # plt.figure()
 # plt.spy(A)
 # plt.show()
