@@ -72,10 +72,12 @@ def createMetaData(libPlayers, width, height, pad, fieldLength, fieldWidth):
         # use this to position different teams at different ends of the field.
         if data["team"] == defaultTeamName:
             nodeX[data["value"]] = pad + xScale*location[0]
+            nodeY[data["value"]] = yScale*(location[1]-fieldWidth/2) + height/2
         else:
             nodeX[data["value"]] = width - pad - xScale*location[0]
+            nodeY[data["value"]] = -yScale*(location[1]-fieldWidth/2) + height/2
 
-        nodeY[data["value"]] = yScale*(location[1]-fieldWidth/2) + height/2
+
         teamName[data["value"]] = data["team"]
 
         displayInfo.update({'name':{'values':nodeName},'x':{'values':nodeX},'y':{'values':nodeY},'team':{'values':teamName}})
