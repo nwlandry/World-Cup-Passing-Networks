@@ -19,7 +19,7 @@ class AnalysisApp(tk.Tk):
         self.data = dict()
 
         #  MENUBAR
-        self.filterArray = ['By Competition', 'By Team', 'By Match', 'By Match File']
+        self.filterArray = ['By Competition', 'By Team', 'By Player', 'By Match', 'By Match File']
         self.filterOptions = tk.StringVar()
         self.filterOptions.set(self.filterArray[0])  # default value
         self.filterMenu = tk.OptionMenu(self, self.filterOptions, *self.filterArray, command=self.ClearAll)
@@ -86,6 +86,9 @@ class AnalysisApp(tk.Tk):
             self.LoadCompetitions()
 
         elif filterChoice == "By Team":
+            self.LoadTeams()
+
+        elif filterChoice == "By Player":
             messagebox.showinfo("Window", "Not Implemented Yet!")
 
         elif filterChoice == "By Match":
@@ -118,10 +121,10 @@ class AnalysisApp(tk.Tk):
         # Need to check for folders and files
         dirname = filedialog.askdirectory(title='Please select a directory')
         dirList = os.listdir(dirname)
-        if 'events' in dirList and 'matches' in dirList and 'competitions.json' in dirList:
+        if 'events' in dirList and 'matches' in dirList and 'lineups' in dirList and 'competitions.json' in dirList:
             self.defaultFolder = dirname
         else:
-            messagebox.showinfo("Window", "Please Select a folder containing events and matches subfolders and competition.json!")
+            messagebox.showinfo("Window", "Please Select a folder containing events, lineups, and matches subfolders and competition.json!")
 
     def SelectItems(self):
         matchFileList = list()
@@ -131,21 +134,41 @@ class AnalysisApp(tk.Tk):
             for index in indices:
                 value = self.availableItemsList.get(index)
                 if value not in self.visualizeItemsList.get(0, tk.END):
-                    self.visualizeItemsList.insert('end', value)
-                    matchFileList.append(self.defaultFolder + "/matches/" + str(self.data[self.availableItemsList.get(index)]) + ".json")
+                    self.visualizeItemsList.insert(tk.END, value)
+
+                    matchFileList.append(self.defaultFolder + "/matches/" +
+                    str(self.data[self.availableItemsList.get(index)][0]) + "/"
+                    + str(self.data[self.availableItemsList.get(index)][1]) + ".json")
             for matchFile in matchFileList:
                 self.infoList.extend(self.GetCompetitionMatchFileList(matchFile))
 
         elif filterChoice == "By Team":
-            print('2')
+            indices = self.availableItemsList.curselection()
+            for index in indices:
+                value = self.availableItemsList.get(index)
+                if value not in self.visualizeItemsList.get(0, tk.END):
+                    self.visualizeItemsList.insert(tk.END, value)
+                    # iterate through folders and files
+                    dirList = os.listdir(self.defaultFolder + "/matches/")
+                    for folder in dirList:
+                        fileList = os.listdir(self.defaultFolder + "/matches/" + folder)
+
+                        for file in fileList:
+                            filename = self.defaultFolder + "/matches/" + folder + "/" + file
+                            with open(filename) as json_file:
+                                data = json.load(json_file)
+                            for item in data:
+                                if item["home_team"]["home_team_name"] == value or item["away_team"]["away_team_name"] == value:
+                                    listItem = item["home_team"]["home_team_name"] + " vs. " + item["away_team"]["away_team_name"] + " " + item["match_date"]
+                                    self.infoList.append([self.defaultFolder + "/events/" + str(item["match_id"]) + ".json", listItem])
 
         elif filterChoice == "By Match":
             indices = self.availableItemsList.curselection()
             for index in indices:
                 value = self.availableItemsList.get(index)
                 if value not in self.visualizeItemsList.get(0, tk.END):
-                    self.visualizeItemsList.insert('end', value)
-                    self.infoList.append([self.defaultFolder + "events" + str(self.data[self.availableItemsList.get(index)]) + ".json", value])
+                    self.visualizeItemsList.insert(tk.END, value)
+                    self.infoList.append([self.defaultFolder + "/events/" + str(self.data[self.availableItemsList.get(index)]) + ".json", value])
 
         elif filterChoice == "By File":
             print('4')
@@ -169,19 +192,43 @@ class AnalysisApp(tk.Tk):
             listItem = item["competition_name"] + " " + item["season_name"]
             if listItem not in self.availableItemsList.get(0, tk.END):
                 self.availableItemsList.insert(tk.END, listItem)
-                self.data.update({listItem:item["competition_id"]})
+                self.data.update({listItem:[item["competition_id"],item["season_id"]]})
+
+    def LoadTeams(self):
+        dirList = os.listdir(self.defaultFolder + "/matches/")
+        for folder in dirList:
+            fileList = os.listdir(self.defaultFolder + "/matches/" + folder)
+
+            for file in fileList:
+                filename = self.defaultFolder + "/matches/" + folder + "/" + file
+                with open(filename) as json_file:
+                    data = json.load(json_file)
+
+                for item in data:
+                    homeTeam = item["home_team"]["home_team_name"]
+                    awayTeam = item["away_team"]["away_team_name"]
+                    if homeTeam not in self.availableItemsList.get(0, tk.END):
+                        self.availableItemsList.insert(tk.END, homeTeam)
+                        self.data.update({homeTeam:item["home_team"]["home_team_id"]})
+                    if awayTeam not in self.availableItemsList.get(0, tk.END):
+                        self.availableItemsList.insert(tk.END, awayTeam)
+                        self.data.update({awayTeam:item["away_team"]["away_team_id"]})
 
     def LoadMatches(self):
         dirList = os.listdir(self.defaultFolder + "/matches/")
-        for file in dirList:
-            filename = self.defaultFolder + "/matches/" + file
-            with open(filename) as json_file:
-                data = json.load(json_file)
-            for item in data:
-                listItem = item["home_team"]["home_team_name"] + " vs. " + item["away_team"]["away_team_name"] + " " + item["match_date"]
-                if listItem not in self.availableItemsList.get(0, tk.END):
-                    self.availableItemsList.insert(tk.END, listItem)
-                    self.data.update({listItem:item["match_id"]})
+        for folder in dirList:
+            fileList = os.listdir(self.defaultFolder + "/matches/" + folder)
+
+            for file in fileList:
+                filename = self.defaultFolder + "/matches/" + folder + "/" + file
+                with open(filename) as json_file:
+                    data = json.load(json_file)
+
+                for item in data:
+                    listItem = item["home_team"]["home_team_name"] + " vs. " + item["away_team"]["away_team_name"] + " " + item["match_date"]
+                    if listItem not in self.availableItemsList.get(0, tk.END):
+                        self.availableItemsList.insert(tk.END, listItem)
+                        self.data.update({listItem:item["match_id"]})
 
     def GetCompetitionMatchFileList(self, competitionMatchesFile):
         matchFileList = list()

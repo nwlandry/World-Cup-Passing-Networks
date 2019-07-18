@@ -10,8 +10,8 @@ import random
 
 def visualizePassingNetworks(visTitle, visInfoList):
     # Visualization Parameters
-    width = 1000
-    height = 600
+    width = 800
+    height = 480
     padding = 50
 
     #field dimensions
@@ -21,7 +21,6 @@ def visualizePassingNetworks(visTitle, visInfoList):
     web = Web(title=visTitle)
 
     for item in visInfoList:
-
         passing, libPlayers = PassingUtilities.createPassingListAndLib(item[0])
         if len(passing) != 0:
             A = PassingUtilities.createAdjacencyMatrix(passing, libPlayers)
@@ -33,6 +32,8 @@ def visualizePassingNetworks(visTitle, visInfoList):
     web.display.linkLength = 200
     web.display.linkStrength = 0.5
     web.display.gravity = .1
+    web.display.radius = 10
+    web.display.scaleLinkOpacity = True
     web.display.colorBy = 'team'
     web.display.scaleLinkWidth = True
     web.display.sizeBy = 'strength'
