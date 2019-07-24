@@ -14,7 +14,7 @@ def visualizePassingNetworks(visTitle, visInfoList):
     height = 480
     padding = 50
 
-    #field dimensions
+    #field dimensions in yards
     fieldLength = 120
     fieldWidth = 75
     # instantiate webweb

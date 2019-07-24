@@ -12,13 +12,16 @@ class AnalysisApp(tk.Tk):
         tk.Tk.__init__(self)  # Initialize
         self.geometry('900x350+300+300')
 
-        # Initialize data folder
-
+        # data folder with the matches, events, and lineups folders
         self.defaultFolder = []
+
+        # stores the title of the visualization and the filename from which to parse the passing data
         self.infoList = []
+
+        # Stores a dictionary mapping the label in the listboxes to the element ids
         self.data = dict()
 
-        #  MENUBAR
+        #  GUI elements
         self.filterArray = ['By Competition', 'By Team', 'By Player', 'By Match', 'By Match File']
         self.filterOptions = tk.StringVar()
         self.filterOptions.set(self.filterArray[0])  # default value
@@ -68,34 +71,48 @@ class AnalysisApp(tk.Tk):
         # Column 5
         self.visualizeItemsScrollbar.grid(row=1, column=5, rowspan=2, sticky='nsew')
 
-
+    # When the "Visualize with WebWeb" button is pressed
     def OnVisualize(self):
+        # If no items are selected
         if len(self.infoList) == 0:
             messagebox.showinfo("Window", "Please Select an Item!")
         else:
+            # title for visualizations (however not used with the attachWebWebElementtoId)
             title = simpledialog.askstring("Input", "What is the visualization title?")
+            # Parse the data files given with the list of files given by self.infoList
             WebWebUtilities.visualizePassingNetworks(title, self.infoList)
 
 
     def GetItems(self):
+        # Generate Listbox items after "Get Items" button press depending on the category being parsed (Competition, Team, Player, etc)
         filterChoice = self.filterOptions.get()
+
+        # Force a data folder to be selected.
         if self.defaultFolder == []:
             self.GetFolder()
 
-        if filterChoice == "By Competition":
-            self.LoadCompetitions()
+            # If you don't select an item, I suppose it's an infinite loop
+            self.GetItems()
+        else:
+            if filterChoice == "By Competition":
+                # Load the list of competitions into the listbox
+                self.LoadCompetitions()
 
-        elif filterChoice == "By Team":
-            self.LoadTeams()
+            elif filterChoice == "By Team":
+                # Load the list of teams into the listbox
+                self.LoadTeams()
 
-        elif filterChoice == "By Player":
-            messagebox.showinfo("Window", "Not Implemented Yet!")
+            elif filterChoice == "By Player":
+                # Eventually it will load all the players into the listbox when this is implemented
+                messagebox.showinfo("Window", "Not Implemented Yet!")
 
-        elif filterChoice == "By Match":
-            self.LoadMatches()
+            elif filterChoice == "By Match":
+                # Load the list of teams into the listbox
+                self.LoadMatches()
 
-        elif filterChoice == "By Match File":
-            messagebox.showinfo("Window", "Not Implemented Yet!")
+            elif filterChoice == "By Match File":
+                # Eventually it will load selected files into the listbox when this is implemented
+                messagebox.showinfo("Window", "Not Implemented Yet!")
             # options = {}
             # options['initialdir'] = self.defaultFolder
             # filenames = filedialog.askopenfilenames(**options)
@@ -118,9 +135,15 @@ class AnalysisApp(tk.Tk):
 
 
     def GetFolder(self):
-        # Need to check for folders and files
+        # Select a folder that fulfills the folder structure criteria
         dirname = filedialog.askdirectory(title='Please select a directory')
-        dirList = os.listdir(dirname)
+        try:
+            dirList = os.listdir(dirname)
+        except:
+            # if you don't select a file
+            messagebox.showinfo("Window", "No Folder Selected!")
+            return
+        # check that the folder contains the necessary subfolders and files.
         if 'events' in dirList and 'matches' in dirList and 'lineups' in dirList and 'competitions.json' in dirList:
             self.defaultFolder = dirname
         else:
@@ -174,20 +197,33 @@ class AnalysisApp(tk.Tk):
             print('4')
 
     def ClearItems(self):
+        # Clear the items in the visualization list and the infoList
         self.infoList = []
         self.visualizeItemsList.delete(0, tk.END)
 
 
     def ClearAll(self, event):
+        # clear everything when you switch the category by which you are organizing items. It would be inconvenient to allow users to select different categories for the same visualization
         self.infoList = []
         self.visualizeItemsList.delete(0, tk.END)
         self.availableItemsList.delete(0, tk.END)
         self.data.clear()
 
     def LoadCompetitions(self):
+        # load the competitions from the competitions from the competitions file list
         filename = self.defaultFolder + "/competitions.json"
+
         with open(filename) as json_file:
-            data = json.load(json_file)
+            try:
+                data = json.load(json_file)
+            except:
+                with open(filename, 'r', encoding='utf-8') as json_file:
+                    try:
+                        data = json.load(json_file)
+                    except Exception as e:
+                        print(e)
+                        print(filename)
+                        return list()
         for item in data:
             listItem = item["competition_name"] + " " + item["season_name"]
             if listItem not in self.availableItemsList.get(0, tk.END):
@@ -195,14 +231,25 @@ class AnalysisApp(tk.Tk):
                 self.data.update({listItem:[item["competition_id"],item["season_id"]]})
 
     def LoadTeams(self):
+        # load the teams by parsing the json files in each competition subfolder in the matches folders.
         dirList = os.listdir(self.defaultFolder + "/matches/")
         for folder in dirList:
             fileList = os.listdir(self.defaultFolder + "/matches/" + folder)
 
             for file in fileList:
                 filename = self.defaultFolder + "/matches/" + folder + "/" + file
+
                 with open(filename) as json_file:
-                    data = json.load(json_file)
+                    try:
+                        data = json.load(json_file)
+                    except:
+                        with open(filename, 'r', encoding='utf-8') as json_file:
+                            try:
+                                data = json.load(json_file)
+                            except Exception as e:
+                                print(e)
+                                print(filename)
+                                return list()
 
                 for item in data:
                     homeTeam = item["home_team"]["home_team_name"]
@@ -221,8 +268,19 @@ class AnalysisApp(tk.Tk):
 
             for file in fileList:
                 filename = self.defaultFolder + "/matches/" + folder + "/" + file
+
                 with open(filename) as json_file:
-                    data = json.load(json_file)
+                    try:
+                        data = json.load(json_file)
+                    except:
+                        # open with utf-8 coding
+                        with open(filename, 'r', encoding='utf-8') as json_file:
+                            try:
+                                data = json.load(json_file)
+                            except Exception as e:
+                                print(e)
+                                print(filename)
+                                return list()
 
                 for item in data:
                     listItem = item["home_team"]["home_team_name"] + " vs. " + item["away_team"]["away_team_name"] + " " + item["match_date"]
@@ -233,8 +291,20 @@ class AnalysisApp(tk.Tk):
     def GetCompetitionMatchFileList(self, competitionMatchesFile):
         matchFileList = list()
         filename = competitionMatchesFile
+        # with open(filename) as json_file:
+        #     data = json.load(json_file)
+
         with open(filename) as json_file:
-            data = json.load(json_file)
+            try:
+                data = json.load(json_file)
+            except:
+                with open(filename, 'r', encoding='utf-8') as json_file:
+                    try:
+                        data = json.load(json_file)
+                    except Exception as e:
+                        print(e)
+                        print(filename)
+                        return list()
         for item in data:
             info = item["home_team"]["home_team_name"] + " vs. " + item["away_team"]["away_team_name"] + " " + item["match_date"]
             matchFileList.append([self.defaultFolder + "/events/" + str(item["match_id"]) + ".json", info])
