@@ -3,7 +3,7 @@ import numpy
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
-import traceback
+import pickle
 
 def createPassingListAndLib(filename):
     with open(filename) as json_file:
@@ -66,3 +66,13 @@ def createAdjacencyMatrix(passing, libPlayers):
     for entry in passing:
         A[libPlayers[entry["from"]]["value"], libPlayers[entry["to"]]["value"]] = entry["passes"]
     return A
+
+def saveAdjacencyList(savePath, visInfoList):
+    adjacencyList = []
+    for item in visInfoList:
+        passing, libPlayers = createPassingListAndLib(item[0])
+        if len(passing) != 0:
+            adjacencyList.append(createAdjacencyMatrix(passing, libPlayers))
+
+    with open(savePath, 'wb') as f:
+        pickle.dump(adjacencyList, f)

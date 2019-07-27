@@ -5,6 +5,7 @@ from tkinter import messagebox
 import numpy as np
 from tkinter import simpledialog
 import WebWebUtilities
+import PassingUtilities
 import json
 
 class AnalysisApp(tk.Tk):
@@ -24,11 +25,16 @@ class AnalysisApp(tk.Tk):
         #  GUI elements
         self.filterArray = ['By Competition', 'By Team', 'By Player', 'By Match', 'By Match File']
         self.filterOptions = tk.StringVar()
-        self.filterOptions.set(self.filterArray[0])  # default value
+        self.outputArray = ['WebWeb', 'Adjacency Matrix']
+        self.outputOptions = tk.StringVar()
+        self.filterOptions.set(self.filterArray[0])
+        self.outputOptions.set(self.outputArray[0])  # default value
         self.filterMenu = tk.OptionMenu(self, self.filterOptions, *self.filterArray, command=self.ClearAll)
+        self.outputMenu = tk.OptionMenu(self, self.outputOptions, *self.outputArray)
         self.filterLabel = tk.Label(self, text="Filter Options")
+        self.outputLabel = tk.Label(self, text="Output Options")
 
-        self.buttonVisualize = tk.Button(self, text="Visualize with WebWeb", command=self.OnVisualize, width='20')
+        self.buttonVisualize = tk.Button(self, text="Analyze", command=self.OnAnalyze, width='20')
         self.buttonQuit = tk.Button(self, text="Quit", command=self.OnQuit, width='20')
         self.buttonGetItems = tk.Button(self, text="Load Items", command=self.GetItems, width='15')
         self.buttonFolder = tk.Button(self, text="Change Data Folder", command=self.GetFolder, width='15')
@@ -48,39 +54,51 @@ class AnalysisApp(tk.Tk):
         # Column 0
         self.filterLabel.grid(row=0, column=0, columnspan=1, padx=10, pady=10)
         self.filterMenu.grid(row=1, column=0, columnspan=1, padx=10, pady=10)
-        self.buttonVisualize.grid(row=3, column=0, columnspan=1, padx=10, pady=10)
-        self.buttonQuit.grid(row=4, column=0, columnspan=1, padx=10, pady=10)
+        self.outputLabel.grid(row=2, column=0, columnspan=1, padx=10, pady=10)
+        self.outputMenu.grid(row=3, column=0, columnspan=1, padx=10, pady=10)
+        self.buttonVisualize.grid(row=4, column=0, columnspan=1, padx=10, pady=10)
+        self.buttonQuit.grid(row=5, column=0, columnspan=1, padx=10, pady=10)
 
         # Column 1
         self.availableItemsLabel.grid(row=0, column=1, padx=10, pady=10)
-        self.availableItemsList.grid(row=1, column=1, columnspan=1, rowspan=2, sticky='nsew', pady=10)
-        self.buttonGetItems.grid(row=3, column=1, columnspan=1, padx=10, pady=10)
+        self.availableItemsList.grid(row=1, column=1, columnspan=1, rowspan=3, sticky='nsew', pady=10)
+        self.buttonGetItems.grid(row=4, column=1, columnspan=1, padx=10, pady=10)
 
         # Column 2
-        self.availableItemsScrollbar.grid(row=1, column=2, rowspan=2, sticky='nsew')
+        self.availableItemsScrollbar.grid(row=1, column=2, rowspan=3, sticky='nsew')
 
         # Column 3
-        self.buttonFolder.grid(row=3, column=3, columnspan=1, padx=10, pady=10)
+        self.buttonFolder.grid(row=4, column=3, columnspan=1, padx=10, pady=10)
         self.buttonSelect.grid(row=1, column=3, padx=10, pady=10)
 
         # Column 4
         self.visualizeItemsLabel.grid(row=0, column=4, padx=10, pady=10)
-        self.visualizeItemsList.grid(row=1, column=4, columnspan=1, rowspan=2, sticky='nsew')
-        self.buttonClearItems.grid(row=3, column=4, columnspan=1, padx=10, pady=10)
+        self.visualizeItemsList.grid(row=1, column=4, columnspan=1, rowspan=3, sticky='nsew')
+        self.buttonClearItems.grid(row=4, column=4, columnspan=1, padx=10, pady=10)
 
         # Column 5
-        self.visualizeItemsScrollbar.grid(row=1, column=5, rowspan=2, sticky='nsew')
+        self.visualizeItemsScrollbar.grid(row=1, column=5, rowspan=3, sticky='nsew')
 
     # When the "Visualize with WebWeb" button is pressed
-    def OnVisualize(self):
+    def OnAnalyze(self):
         # If no items are selected
         if len(self.infoList) == 0:
             messagebox.showinfo("Window", "Please Select an Item!")
         else:
-            # title for visualizations (however not used with the attachWebWebElementtoId)
-            title = simpledialog.askstring("Input", "What is the visualization title?")
-            # Parse the data files given with the list of files given by self.infoList
-            WebWebUtilities.visualizePassingNetworks(title, self.infoList)
+            outputChoice = self.outputOptions.get()
+            print(outputChoice)
+            if outputChoice == "WebWeb":
+                # title for visualizations (however not used with the attachWebWebElementtoId)
+                title = simpledialog.askstring("Input", "What is the visualization title?")
+                # Parse the data files given with the list of files given by self.infoList
+                WebWebUtilities.visualizePassingNetworks(title, self.infoList)
+            elif outputChoice == "Adjacency Matrix":
+                path = filedialog.asksaveasfilename(initialdir=self.defaultFolder, defaultextension=".pkl")
+                # get rid of extraneous extensions the user may have typed in and append the pickle extension
+                savePath = os.path.splitext(path)[0] + ".pkl"
+                # savePath = self.defaultFolder + "/listmatrices.pkl"
+                PassingUtilities.saveAdjacencyList(savePath, self.infoList)
+
 
 
     def GetItems(self):
